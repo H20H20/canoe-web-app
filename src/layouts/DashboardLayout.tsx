@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, Calendar, MessageSquare, User, LogOut, Menu, X, Heart, Settings, Stethoscope } from 'lucide-react';
+import { Home, Calendar, MessageSquare, User, LogOut, Menu, X, Settings, Stethoscope } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
@@ -27,10 +27,7 @@ export default function DashboardLayout() {
 
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-56 bg-primary-dark text-white flex flex-col transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 font-semibold text-[14px]">
-            <Heart className="w-4.5 h-4.5 fill-white" />
-            Canoe Health
-          </div>
+          <img src="/web_logo.jpeg" alt="Canoe Health" className="h-7 w-auto" />
           <button className="lg:hidden" onClick={() => setSidebarOpen(false)}>
             <X className="w-4 h-4" />
           </button>
@@ -43,7 +40,7 @@ export default function DashboardLayout() {
               to={item.to}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/80'}`
+                `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/80'}`
               }
             >
               <item.icon className="w-[18px] h-[18px]" />
@@ -53,7 +50,7 @@ export default function DashboardLayout() {
         </nav>
 
         <div className="px-2 pb-4">
-          <button onClick={handleLogout} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-white/45 hover:bg-white/8 hover:text-white/70 w-full transition-colors">
+          <button onClick={handleLogout} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-white/45 hover:bg-white/8 hover:text-white/70 w-full transition-colors">
             <LogOut className="w-[18px] h-[18px]" />
             Logout
           </button>
@@ -74,7 +71,7 @@ export default function DashboardLayout() {
                 {user?.first_name?.[0] || 'U'}
               </div>
             )}
-            <span className="hidden sm:block text-[13px] font-medium text-gray-600">
+            <span className="hidden sm:block text-sm font-medium text-gray-600">
               {user?.first_name || 'User'}
             </span>
           </NavLink>

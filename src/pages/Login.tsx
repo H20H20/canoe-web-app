@@ -26,35 +26,76 @@ export default function Login() {
     }
   };
 
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="mb-6">
-        <h1 className="text-lg font-bold text-gray-900">Welcome back</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Sign in to continue</p>
-      </div>
+  const input = 'w-full px-4 py-2.5 text-sm border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none transition';
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-[12px] font-medium text-gray-500 mb-1">Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="w-full px-3 py-2 text-[13px] border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
-        </div>
-        <div>
-          <label className="block text-[12px] font-medium text-gray-500 mb-1">Password</label>
-          <div className="relative">
-            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required className="w-full px-3 py-2 text-[13px] border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition pr-10" />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+  return (
+    <div className="min-h-screen flex w-full">
+      {/* Left: Branding */}
+      <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-primary-dark via-primary to-[#2d8a3e] flex-col justify-between p-10 relative overflow-hidden">
+        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10" />
+        <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-white/5" />
+        <Link to="/">
+          <img src="/web_logo.jpeg" alt="Canoe Health" className="h-10 w-auto relative z-10" />
+        </Link>
+        <div className="relative z-10">
+          <h2 className="text-3xl font-bold text-white leading-snug">Healthcare at your fingertips.</h2>
+          <p className="text-white/70 text-sm mt-3 leading-relaxed max-w-xs">
+            Connect with patients, manage consultations, and grow your practice — all in one place.
+          </p>
+          <div className="mt-8 grid grid-cols-2 gap-3">
+            {[['500+', 'Providers'], ['10k+', 'Consultations'], ['4.8★', 'Rating'], ['UG / KE', 'Countries']].map(([val, lbl]) => (
+              <div key={lbl} className="bg-white/10 rounded-xl px-4 py-3">
+                <p className="text-white font-bold">{val}</p>
+                <p className="text-white/60 text-xs">{lbl}</p>
+              </div>
+            ))}
           </div>
         </div>
-        <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-2 rounded-lg transition text-[13px] disabled:opacity-50">
-          {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : 'Sign In'}
-        </button>
-      </form>
+        <p className="text-white/30 text-xs relative z-10">&copy; {new Date().getFullYear()} Canoe Health Ltd.</p>
+      </div>
 
-      <p className="text-center text-[12px] text-gray-400 mt-5">
-        No account? <Link to="/signup" className="text-primary font-medium hover:underline">Sign up</Link>
-      </p>
+      {/* Right: Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-white">
+        <div className="w-full max-w-sm">
+          <Link to="/" className="lg:hidden mb-6 inline-block">
+            <img src="/web_logo.jpeg" alt="Canoe Health" className="h-8 w-auto" />
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Sign in</h1>
+          <p className="text-sm text-gray-500 mt-1">Welcome back to Canoe Health</p>
+
+          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className={input} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <div className="relative">
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required className={`${input} pr-16`} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-primary hover:underline">
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </div>
+            <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 text-sm">
+              {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="mt-6 flex items-center gap-3 text-sm text-gray-500">
+            <div className="flex-1 h-px bg-gray-200" />No account?<div className="flex-1 h-px bg-gray-200" />
+          </div>
+          <Link to="/signup" className="mt-3 flex items-center justify-center w-full border-2 border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl hover:border-primary hover:text-primary transition text-sm">
+            Register as a provider
+          </Link>
+
+          <div className="mt-6 flex items-center justify-center gap-4 text-xs text-gray-400">
+            <Link to="/terms" className="hover:text-primary">Terms</Link>
+            <Link to="/privacy" className="hover:text-primary">Privacy</Link>
+            <Link to="/contact" className="hover:text-primary">Contact</Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

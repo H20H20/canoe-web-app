@@ -21,7 +21,17 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (data: { email: string; password: string; phone: string; role?: string }) => Promise<{ userId?: string }>;
+  signup: (data: {
+    email: string;
+    password: string;
+    phone: string;
+    full_name: string;
+    role?: string;
+    agreed_to_terms: boolean;
+    iso_code?: string;
+    licensed?: boolean;
+    has_certificate?: boolean;
+  }) => Promise<{ userId?: string }>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -75,10 +85,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (data: { email: string; password: string; phone: string; role?: string }) => {
-    const res = await api.post('/auth/register', data, { useAuth: false });
-    const result = await api.parseResponse<{ data?: { userId?: string; user_id?: string } }>(res);
-    return { userId: result.data?.userId || result.data?.user_id };
+  const signup = async (data: {
+    email: string;
+    password: string;
+    phone: string;
+    full_name: string;
+    role?: string;
+    agreed_to_terms: boolean;
+    iso_code?: string;
+    licensed?: boolean;
+    has_certificate?: boolean;
+  }) => {
+    const body: Record<string, unknown> = {
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+      full_name: data.full_name,
+      role: data.role || 'provider',
+      agreed_to_terms: data.agreed_to_terms,
+      iso_code: data.iso_code || 'UG',
+    };
+    if (data.licensed !== undefined) body.licensed = data.licensed;
+    if (data.has_certificate !== undefined) body.has_certificate = data.has_certificate;
+    const res = await api.post('/auth/signup', body, { useAuth: false });
+    const result = await api.parseResponse<{ data?: { user_id?: string; jwt?: string; role?: string } }>(res);
+    const token = result.data?.jwt;
+    if (token) {
+      api.setToken(token);
+      localStorage.setItem('is_logged_in', 'true');
+      localStorage.setItem('user_role', result.data?.role || 'provider');
+    }
+    return { userId: result.data?.user_id };
   };
 
   const logout = () => {
