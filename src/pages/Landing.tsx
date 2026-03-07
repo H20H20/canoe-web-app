@@ -129,10 +129,15 @@ export default function Landing() {
       {/* ── Footer ──────────────────────────────────────── */}
       <footer className="max-w-6xl mx-auto px-5 sm:px-8 py-5 w-full flex items-center justify-between text-xs text-gray-400">
         <span>&copy; {new Date().getFullYear()} Canoe Health Ltd.</span>
-        <div className="flex gap-5">
+        <div className="flex gap-5 items-center">
           <Link to="/terms"   className="hover:text-primary transition">Terms</Link>
           <Link to="/privacy" className="hover:text-primary transition">Privacy</Link>
           <Link to="/contact" className="hover:text-primary transition">Contact</Link>
+          {/* TODO: remove before going live */}
+          <a href="https://adminpanel.canoehealthcare.com/" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 border border-gray-300 text-gray-500 hover:border-primary hover:text-primary px-2.5 py-1 rounded-md transition font-medium">
+            ⚙ Admin
+          </a>
         </div>
       </footer>
     </div>

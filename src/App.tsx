@@ -13,6 +13,7 @@ import Privacy from './pages/Privacy';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 
+import VideoCall from './pages/VideoCall';
 import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
 import AppointmentDetails from './pages/AppointmentDetails';
@@ -44,6 +45,11 @@ export default function App() {
         <Route path="/register" element={<Navigate to="/signup" replace />} />
         <Route path="/verify" element={<OtpVerify />} />
         <Route path="/personal-details" element={<PersonalDetails />} />
+      </Route>
+
+      {/* Full-screen video/voice call — no sidebar */}
+      <Route element={<ProtectedRoute><></></ProtectedRoute>}>
+        <Route path="/call/:meetingId" element={<VideoCall />} />
       </Route>
 
       {/* Protected provider dashboard */}
