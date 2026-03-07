@@ -7,7 +7,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="px-5 sm:px-8 py-4 flex items-center justify-between max-w-6xl mx-auto w-full">
         <Link to="/" className="flex items-center gap-2 text-white font-semibold text-base tracking-tight">
-          <img src="/web_logo.jpeg" alt="Canoe Health" className="h-8 w-auto" />
+          <img src="/logo.png" alt="Canoe Health" className="h-20 w-auto" />
         </Link>
         <Link to="/signup" className="text-sm font-medium bg-white text-primary-dark px-4 py-2 rounded-md hover:bg-white/90 transition">
           Get Started

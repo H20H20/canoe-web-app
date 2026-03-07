@@ -35,21 +35,14 @@ export default function Login() {
         <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10" />
         <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-white/5" />
         <Link to="/">
-          <img src="/web_logo.jpeg" alt="Canoe Health" className="h-10 w-auto relative z-10" />
+          <img src="/logo.png" alt="Canoe Health" className="h-10 w-auto relative z-10" />
         </Link>
         <div className="relative z-10">
           <h2 className="text-3xl font-bold text-white leading-snug">Healthcare at your fingertips.</h2>
           <p className="text-white/70 text-sm mt-3 leading-relaxed max-w-xs">
             Connect with patients, manage consultations, and grow your practice — all in one place.
           </p>
-          <div className="mt-8 grid grid-cols-2 gap-3">
-            {[['500+', 'Providers'], ['10k+', 'Consultations'], ['4.8★', 'Rating'], ['UG / KE', 'Countries']].map(([val, lbl]) => (
-              <div key={lbl} className="bg-white/10 rounded-xl px-4 py-3">
-                <p className="text-white font-bold">{val}</p>
-                <p className="text-white/60 text-xs">{lbl}</p>
-              </div>
-            ))}
-          </div>
+       
         </div>
         <p className="text-white/30 text-xs relative z-10">&copy; {new Date().getFullYear()} Canoe Health Ltd.</p>
       </div>

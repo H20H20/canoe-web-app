@@ -14,11 +14,13 @@ import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 
 import Dashboard from './pages/Dashboard';
-import FindDoctors from './pages/FindDoctors';
-import DoctorDetails from './pages/DoctorDetails';
-import BookAppointment from './pages/BookAppointment';
 import Appointments from './pages/Appointments';
 import AppointmentDetails from './pages/AppointmentDetails';
+import ProviderCalendar from './pages/ProviderCalendar';
+import Availability from './pages/Availability';
+import Clients from './pages/Clients';
+import ClientFile from './pages/ClientFile';
+import Wallet from './pages/Wallet';
 import ChatsList from './pages/ChatsList';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
@@ -44,17 +46,31 @@ export default function App() {
         <Route path="/personal-details" element={<PersonalDetails />} />
       </Route>
 
-      {/* Protected dashboard */}
+      {/* Protected provider dashboard */}
       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/home" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/doctors" element={<FindDoctors />} />
-        <Route path="/doctors/:id" element={<DoctorDetails />} />
-        <Route path="/doctors/:id/book" element={<BookAppointment />} />
+
+        {/* Appointments */}
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/appointments/:id" element={<AppointmentDetails />} />
+
+        {/* Schedule & Availability */}
+        <Route path="/schedule" element={<ProviderCalendar />} />
+        <Route path="/availability" element={<Availability />} />
+
+        {/* Clients (patient files) */}
+        <Route path="/clients" element={<Clients />} />
+        <Route path="/clients/:id" element={<ClientFile />} />
+
+        {/* Wallet */}
+        <Route path="/wallet" element={<Wallet />} />
+
+        {/* Messaging */}
         <Route path="/chats" element={<ChatsList />} />
         <Route path="/chats/:id" element={<Chat />} />
+
+        {/* Profile & Settings */}
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/settings" element={<Settings />} />

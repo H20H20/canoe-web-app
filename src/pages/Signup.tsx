@@ -185,11 +185,66 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex w-full">
       {/* ── LEFT: Form ────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center bg-white p-6 sm:p-8 overflow-y-auto">
+   
+      <div className={`hidden lg:flex lg:w-[44%] bg-gradient-to-br ${panel.gradient} flex-col justify-between p-10 relative overflow-hidden shrink-0`}
+        style={{ transition: 'background 0.7s ease' }}>
+        {/* Decorative circles */}
+        <div className="absolute -top-24 -left-12 w-72 h-72 rounded-full bg-white/8 pointer-events-none" />
+        <div className="absolute top-1/2 right-0 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
+        <div className="absolute -bottom-20 right-8 w-64 h-64 rounded-full bg-black/10 pointer-events-none" />
+
+        {/* Logo */}
+        <Link to="/" className="relative z-10">
+          <img src="/logo.png" alt="Canoe Health" className="h-20 w-auto" />
+        </Link>
+
+        {/* Animated content */}
+        <div key={panelKey} className="relative z-10 panel-in">
+          <p className="text-white/50 text-[10px] font-bold uppercase tracking-[0.18em] mb-3">{panel.label}</p>
+          <h2 className="text-[28px] font-bold text-white leading-[1.2] whitespace-pre-line">{panel.headline}</h2>
+          <p className="text-white/60 text-sm mt-3 leading-relaxed max-w-[280px]">{panel.body}</p>
+
+          {/* Items — icons or flags */}
+          <div className="mt-7 space-y-2.5">
+            {'useFlags' in panel && panel.useFlags
+              ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {(panel.items as { flag: string; text: string }[]).map((item) => (
+                    <div key={item.text} className="bg-white/10 rounded-xl px-3 py-2.5 flex items-center gap-2">
+                      <span className="text-lg leading-none">{item.flag}</span>
+                      <span className="text-xs text-white/80 font-medium">{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+              )
+              : (panel.items as { Icon: React.ComponentType<{ className?: string }>; text: string }[]).map((item) => (
+                <div key={item.text} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0">
+                    <item.Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-white/80 font-medium">{item.text}</span>
+                </div>
+              ))
+            }
+          </div>
+
+          {/* Progress dots */}
+          <div className="flex gap-1.5 mt-10">
+            {STEPS.map((_, i) => (
+              <div key={i}
+                className={`rounded-full transition-all duration-500 ${i === step ? 'w-7 h-2 bg-white' : 'w-2 h-2 bg-white/30'}`} />
+            ))}
+          </div>
+        </div>
+
+        <p className="text-white/20 text-xs relative z-10">&copy; {new Date().getFullYear()} Canoe Health Ltd.</p>
+      </div>
+      
+         <div className="flex-1 flex items-center justify-center bg-white p-6 sm:p-8 overflow-y-auto">
         <div className="w-full max-w-md py-4">
           {/* Mobile logo */}
           <Link to="/" className="lg:hidden mb-5 inline-block">
-            <img src="/web_logo.jpeg" alt="Canoe Health" className="h-8 w-auto" />
+            <img src="/logo.png" alt="Canoe Health" className="h-8 w-auto" />
           </Link>
 
           <div className="flex items-center justify-between">
@@ -394,59 +449,7 @@ export default function Signup() {
       </div>
 
       {/* ── RIGHT: Animated info panel ─────────────────── */}
-      <div className={`hidden lg:flex lg:w-[44%] bg-gradient-to-br ${panel.gradient} flex-col justify-between p-10 relative overflow-hidden shrink-0`}
-        style={{ transition: 'background 0.7s ease' }}>
-        {/* Decorative circles */}
-        <div className="absolute -top-24 -left-12 w-72 h-72 rounded-full bg-white/8 pointer-events-none" />
-        <div className="absolute top-1/2 right-0 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
-        <div className="absolute -bottom-20 right-8 w-64 h-64 rounded-full bg-black/10 pointer-events-none" />
-
-        {/* Logo */}
-        <Link to="/" className="relative z-10">
-          <img src="/web_logo.jpeg" alt="Canoe Health" className="h-10 w-auto" />
-        </Link>
-
-        {/* Animated content */}
-        <div key={panelKey} className="relative z-10 panel-in">
-          <p className="text-white/50 text-[10px] font-bold uppercase tracking-[0.18em] mb-3">{panel.label}</p>
-          <h2 className="text-[28px] font-bold text-white leading-[1.2] whitespace-pre-line">{panel.headline}</h2>
-          <p className="text-white/60 text-sm mt-3 leading-relaxed max-w-[280px]">{panel.body}</p>
-
-          {/* Items — icons or flags */}
-          <div className="mt-7 space-y-2.5">
-            {'useFlags' in panel && panel.useFlags
-              ? (
-                <div className="grid grid-cols-3 gap-2">
-                  {(panel.items as { flag: string; text: string }[]).map((item) => (
-                    <div key={item.text} className="bg-white/10 rounded-xl px-3 py-2.5 flex items-center gap-2">
-                      <span className="text-lg leading-none">{item.flag}</span>
-                      <span className="text-xs text-white/80 font-medium">{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-              )
-              : (panel.items as { Icon: React.ComponentType<{ className?: string }>; text: string }[]).map((item) => (
-                <div key={item.text} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0">
-                    <item.Icon className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-sm text-white/80 font-medium">{item.text}</span>
-                </div>
-              ))
-            }
-          </div>
-
-          {/* Progress dots */}
-          <div className="flex gap-1.5 mt-10">
-            {STEPS.map((_, i) => (
-              <div key={i}
-                className={`rounded-full transition-all duration-500 ${i === step ? 'w-7 h-2 bg-white' : 'w-2 h-2 bg-white/30'}`} />
-            ))}
-          </div>
-        </div>
-
-        <p className="text-white/20 text-xs relative z-10">&copy; {new Date().getFullYear()} Canoe Health Ltd.</p>
-      </div>
+     
     </div>
   );
 }
