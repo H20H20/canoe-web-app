@@ -3,7 +3,6 @@ import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Register from './pages/Register';
@@ -37,8 +36,8 @@ import SettingsPaymentMethods from './pages/SettingsPaymentMethods';
 export default function App() {
   return (
     <Routes>
-      {/* Public pages */}
-      <Route path="/" element={<Landing />} />
+      {/* App starts at login; landing lives on separate site (canoe-fe-website) */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/contact" element={<Contact />} />

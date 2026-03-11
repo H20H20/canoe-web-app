@@ -8,7 +8,7 @@ import {
   type CallType,
   sanitizeRoom,
   generateRoomId,
-  buildCallUrl,
+  buildJitsiJoinUrl,
   extractMeetingFromUrl,
 } from '../utils/meetings';
 
@@ -217,7 +217,7 @@ export default function Chat() {
       : `${scheduledDate} ${scheduledTime}`;
 
     const sendInvite = async (roomId: string) => {
-      const callUrl = buildCallUrl(roomId, { audioOnly });
+      const callUrl = buildJitsiJoinUrl(roomId);
       const content = `${audioOnly ? 'Audio' : 'Video'} call scheduled on ${whenLabel}.\nJoin: ${callUrl}`;
       await api.parseResponse(
         await api.post(`/chat/${id}/messages`, {
