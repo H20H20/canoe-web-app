@@ -1,13 +1,31 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useAuth } from '../contexts/AuthContext';
 import { Phone } from 'lucide-react';
+import api from '../services/api';
+
+const JITSI_DOMAIN = 'meet.canoehealthcare.com';
 
 export default function VideoCall() {
   const { meetingId } = useParams<{ meetingId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const [jwt, setJwt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!meetingId) return;
+    api
+      .get(`/jitsi/token?room=${encodeURIComponent(meetingId)}`)
+      .then((r) => api.parseResponse<{ status: number; token?: string }>(r))
+      .then((data) => {
+        setJwt(data.token ?? null);
+      })
+      .catch(() => {
+        setJwt(null);
+      });
+  }, [meetingId]);
 
   const audioOnly = searchParams.get('audioOnly') === 'true';
 
@@ -36,8 +54,9 @@ export default function VideoCall() {
       {/* Jitsi iframe fills remaining space */}
       <div className="flex-1">
         <JitsiMeeting
-          domain="meet.jit.si"
+          domain={JITSI_DOMAIN}
           roomName={meetingId}
+          jwt={jwt || undefined}
           configOverwrite={{
             startWithAudioMuted: false,
             startWithVideoMuted: audioOnly,
