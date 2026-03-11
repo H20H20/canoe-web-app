@@ -62,7 +62,7 @@ export default function Login() {
           <Link to="/" className="lg:hidden mb-6 inline-block">
             <img src="/web_logo.jpeg" alt="Canoe Health" className="h-8 w-auto" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Sign in</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Provider Sign in</h1>
           <p className="text-sm text-gray-500 mt-1">Welcome back to Canoe Health</p>
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-4">
