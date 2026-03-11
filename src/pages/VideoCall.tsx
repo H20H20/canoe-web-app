@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useAuth } from '../contexts/AuthContext';
