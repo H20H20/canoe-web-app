@@ -177,7 +177,7 @@ export default function Dashboard() {
             Set Availability
           </Link>
           <Link to="/clients" className="text-sm font-medium px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition flex items-center gap-1.5">
-            <Users className="w-4 h-4" /> My Clients
+            <Users className="w-4 h-4" /> My Patients
           </Link>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { to: '/schedule',     icon: Clock,    label: 'My Schedule', color: 'bg-blue-50 text-blue-600'   },
-          { to: '/clients',      icon: Users,    label: 'My Clients',  color: 'bg-primary-light text-primary' },
+          { to: '/clients',      icon: Users,    label: 'My Patients',  color: 'bg-primary-light text-primary' },
           { to: '/availability', icon: Calendar, label: 'Availability',color: 'bg-orange-50 text-orange-500'},
         ].map((a) => (
           <Link key={a.to} to={a.to} className="flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">

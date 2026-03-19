@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { to: '/dashboard',    icon: Home,          label: 'Dashboard'    },
   { to: '/appointments', icon: Calendar,       label: 'Appointments' },
   { to: '/schedule',     icon: Clock,          label: 'My Schedule'  },
-  { to: '/clients',      icon: Users,          label: 'My Clients'   },
+  { to: '/clients',      icon: Users,          label: 'My Patients'   },
   { to: '/chats',        icon: MessageCircle,  label: 'Chat'         },
   { to: '/wallet',       icon: Wallet,         label: 'Wallet'       },
   { to: '/credentials', icon: BadgeCheck,     label: 'Credentials'  },

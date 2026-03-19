@@ -87,7 +87,7 @@ export default function Clients() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Clients</h1>
+          <h1 className="text-2xl font-bold text-gray-900">My Patients</h1>
           <p className="text-sm text-gray-500 mt-0.5">{clients.length} patient{clients.length !== 1 ? 's' : ''} in your care</p>
         </div>
       </div>
@@ -111,8 +111,8 @@ export default function Clients() {
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-14 text-center shadow-sm">
           <User className="w-10 h-10 text-gray-200 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">{search ? 'No patients match your search' : 'No clients yet'}</p>
-          <p className="text-gray-300 text-xs mt-1">Clients appear here once you have accepted appointments</p>
+          <p className="text-gray-400 text-sm">{search ? 'No patients match your search' : 'No patients yet'}</p>
+          <p className="text-gray-300 text-xs mt-1">Patients appear here once you have accepted appointments</p>
         </div>
       ) : (
         <>

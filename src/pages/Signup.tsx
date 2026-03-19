@@ -95,7 +95,7 @@ const CLIENT_PANELS = [
   {
     label: 'Step 1 of 3',
     headline: 'Welcome to\nCanoe Health',
-    sub: 'Client Registration',
+    sub: 'Patient Registration',
     body: 'Book appointments, chat with providers, and manage your health — all from one place.',
     items: [
       { Icon: CalendarDays, text: 'Easy appointment booking' },
@@ -342,7 +342,7 @@ export default function Signup() {
 
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">
-              {isProvider ? 'Provider Registration' : 'Client Registration'}
+              {isProvider ? 'Provider Registration' : 'Patient Registration'}
             </p>
             <span className="text-xs text-gray-400">{step + 1} / {STEPS.length}</span>
           </div>

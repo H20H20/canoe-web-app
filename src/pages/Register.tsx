@@ -86,7 +86,7 @@ export default function Register() {
                 <UserRound className="w-6 h-6 text-primary" />
               </div>
               <h2 className="text-lg font-bold text-gray-900 group-hover:text-primary transition">
-                Register as a client
+                Register as a patient
               </h2>
               
               <div className="mt-5 inline-flex items-center text-sm font-semibold text-primary">
