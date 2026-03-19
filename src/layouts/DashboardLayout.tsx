@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, Calendar, Users, MessageCircle, Wallet, User, LogOut, Menu, X, Settings, Clock, ChevronRight, Bell } from 'lucide-react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Home, Calendar, Users, MessageCircle, Wallet, User, LogOut, Menu, X, Settings, Clock, ChevronRight, Bell, BadgeCheck, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/clients',      icon: Users,          label: 'My Clients'   },
   { to: '/chats',        icon: MessageCircle,  label: 'Chat'         },
   { to: '/wallet',       icon: Wallet,         label: 'Wallet'       },
+  { to: '/credentials', icon: BadgeCheck,     label: 'Credentials'  },
   { to: '/profile',      icon: User,           label: 'Profile'      },
   { to: '/settings',     icon: Settings,       label: 'Settings'     },
 ];
@@ -18,10 +19,13 @@ const NAV_ITEMS = [
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isProvider = user?.role === 'provider';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement | null>(null);
+  const [hasMedicalLicenceDoc, setHasMedicalLicenceDoc] = useState<boolean | null>(null);
 
   // Keep scrolling inside the main content area, not the whole page.
   useEffect(() => {
@@ -33,6 +37,7 @@ export default function DashboardLayout() {
   }, []);
 
   useEffect(() => {
+    if (!isProvider) return;
     api.get('/providers/profile')
       .then((r) => api.parseResponse<{ data?: { provider?: { is_available?: boolean } } }>(r))
       .then((res) => {
@@ -40,7 +45,20 @@ export default function DashboardLayout() {
         if (val !== undefined) setIsAvailable(!!val);
       })
       .catch(() => {});
-  }, []);
+  }, [isProvider]);
+
+  useEffect(() => {
+    if (!isProvider) return;
+    api.get('/providers/documents')
+      .then((r) => api.parseResponse<{ data?: Array<{ document_type?: string }> }>(r))
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        setHasMedicalLicenceDoc(list.some((d) => d?.document_type === 'license'));
+      })
+      .catch(() => setHasMedicalLicenceDoc(null));
+  }, [isProvider]);
+
+  const navItems = isProvider ? NAV_ITEMS : NAV_ITEMS.filter((item) => item.to !== '/credentials');
 
   useEffect(() => {
     if (!notifOpen) return;
@@ -101,7 +119,7 @@ export default function DashboardLayout() {
 
         {/* Nav */}
         <nav className="flex-1 px-2 space-y-0.5 mt-2 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -176,6 +194,27 @@ export default function DashboardLayout() {
             </NavLink>
           </div>
         </header>
+
+        {hasMedicalLicenceDoc === false && (
+          <div className="px-4 lg:px-5 py-3">
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2 min-w-0">
+                <AlertTriangle className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">Medical licence is required.</p>
+                  <p className="text-xs text-gray-600 mt-0.5">ID is required to withdraw money from your wallet.</p>
+                </div>
+              </div>
+              <NavLink
+                to="/credentials"
+                className="shrink-0 px-3 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition"
+                state={{ from: location.pathname }}
+              >
+                Upload now
+              </NavLink>
+            </div>
+          </div>
+        )}
 
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 lg:p-6 min-h-full">

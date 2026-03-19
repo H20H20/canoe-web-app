@@ -32,6 +32,7 @@ import EditProfile from './pages/EditProfile';
 import Settings from './pages/Settings';
 import ChangePassword from './pages/ChangePassword';
 import SettingsPaymentMethods from './pages/SettingsPaymentMethods';
+import Credentials from './pages/Credentials';
 
 export default function App() {
   return (
@@ -87,6 +88,9 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/password" element={<ChangePassword />} />
         <Route path="/settings/payment-methods" element={<SettingsPaymentMethods />} />
+
+        {/* KYC / Credentials */}
+        <Route path="/credentials" element={<Credentials />} />
       </Route>
 
       {/* 404 */}

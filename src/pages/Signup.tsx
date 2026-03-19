@@ -1,33 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ChevronRight, Video, Wallet, CalendarDays, ShieldCheck, Stethoscope, Globe, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 /* ─── Static data ─────────────────────────────────────── */
 
 const COUNTRIES = [
   { flag: '🇺🇬', name: 'Uganda',   iso: 'UG', dial: '+256' },
   { flag: '🇰🇪', name: 'Kenya',    iso: 'KE', dial: '+254' },
-  { flag: '🇹🇿', name: 'Tanzania', iso: 'TZ', dial: '+255' },
-  { flag: '🇷🇼', name: 'Rwanda',   iso: 'RW', dial: '+250' },
-  { flag: '🇧🇮', name: 'Burundi',  iso: 'BI', dial: '+257' },
-  { flag: '🇸🇸', name: 'S. Sudan', iso: 'SS', dial: '+211' },
-];
-
-const SPECIALTIES = [
-  'General Practitioner',
-  'Cardiologist',
-  'Dermatologist',
-  'Gynecologist / Obstetrics',
-  'Pediatrician',
-  'Psychiatrist / Mental Health',
-  'Surgeon',
-  'Nurse / Midwife',
-  'Nutritionist / Dietitian',
-  'Physiotherapist',
-  'Pharmacist',
-  'Other',
 ];
 
 const EXPERIENCE = ['< 1 yr', '1–3 yrs', '3–5 yrs', '5–10 yrs', '10+ yrs'];
@@ -37,14 +19,14 @@ function getRoleFromUrl(): 'provider' | 'client' {
   return role === 'client' ? 'client' : 'provider';
 }
 
-const PROVIDER_STEPS = ['Your identity', 'Contact & location', 'Professional background', 'Security'];
+const PROVIDER_STEPS = ['Your identity', 'Contact & location', 'Specialisation', 'Professional background', 'Security'];
 const CLIENT_STEPS = ['Your identity', 'Contact & location', 'Security'];
 
 /* ─── Panel content per step ─────────────────────────── */
 
 const PROVIDER_PANELS = [
   {
-    label: 'Step 1 of 4',
+    label: 'Step 1 of 5',
     headline: 'Welcome to\nCanoe Health',
     sub: 'Provider Registration',
     body: 'As a Canoe Health provider, you offer telemedicine to patients — consultations via video and voice calls, all through the app. Set your own schedule, work from anywhere, and get paid securely for every session.',
@@ -56,7 +38,7 @@ const PROVIDER_PANELS = [
     gradient: 'from-[#1B5E20] via-[#256829] to-[#2E7D32]',
   },
   {
-    label: 'Step 2 of 4',
+    label: 'Step 2 of 5',
     headline: 'Reach patients\nacross East Africa',
     sub: 'Contact & Location',
     body: 'Tell us where you practice so we can connect you with nearby patients and ensure timely appointment notifications reach you.',
@@ -72,7 +54,19 @@ const PROVIDER_PANELS = [
     useFlags: true,
   },
   {
-    label: 'Step 3 of 4',
+    label: 'Step 3 of 5',
+    headline: 'Pick a specialty\nthat fits you',
+    sub: 'Specialisation',
+    body: 'Choose one or more categories and specialties so patients can find you.',
+    items: [
+      { Icon: Stethoscope,   text: 'Category + specialty selection' },
+      { Icon: Globe,         text: 'Better patient matching' },
+      { Icon: ShieldCheck,   text: 'Clear verification pathway' },
+    ],
+    gradient: 'from-[#155d25] via-[#1d7530] to-[#2E7D32]',
+  },
+  {
+    label: 'Step 4 of 5',
     headline: 'Your credentials\nbuild patient trust',
     sub: 'Professional background',
     body: 'Patients feel safer consulting verified professionals. Your license, certification, and specialty help us match you with the right cases and build your reputation on the platform.',
@@ -84,7 +78,7 @@ const PROVIDER_PANELS = [
     gradient: 'from-[#155d25] via-[#1d7530] to-[#2E7D32]',
   },
   {
-    label: 'Step 4 of 4',
+    label: 'Step 5 of 5',
     headline: "Almost there —\nwelcome aboard!",
     sub: 'Account security',
     body: "After registration, our team reviews your profile within 1–2 business days. Once approved, you're live and can start accepting patient bookings.",
@@ -164,13 +158,21 @@ export default function Signup() {
   const [phone, setPhone]     = useState('');
   const [city, setCity]       = useState('');
 
-  // Step 2
-  const [specialty, setSpecialty]   = useState('');
+  // Step 2 (provider only): category + specialisation
+  const [categories, setCategories] = useState<{ id: number; category_name: string }[]>([]);
+  const [specialisationsByCategoryId, setSpecialisationsByCategoryId] = useState<
+    Record<number, { id: number; category_id: number; category_name: string; item_name: string }[]>
+  >({});
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [selectedSpecialisationIds, setSelectedSpecialisationIds] = useState<number[]>([]);
+  const [specialisationSearch, setSpecialisationSearch] = useState('');
+
+  // Step 3 (provider only): professional background
   const [experience, setExperience] = useState('');
   const [licensed, setLicensed]     = useState<'yes' | 'no' | ''>('');
   const [hasCert, setHasCert]       = useState<'yes' | 'no' | ''>('');
 
-  // Step 3
+  // Step 4 (provider) / Step 2 (client): security
   const [password, setPassword]               = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass]               = useState(false);
@@ -181,8 +183,9 @@ export default function Signup() {
 
   const can0 = firstName.trim() && lastName.trim() && email.trim().includes('@');
   const can1 = phone.trim().length >= 6;
-  const can2 = !isProvider || (licensed !== '' && hasCert !== '' && specialty !== '');
-  const can3 = password.length >= 8 && password === confirmPassword && agreedTerms && agreedAccurate && agreedVerify;
+  const canSpec = !isProvider || selectedSpecialisationIds.length > 0;
+  const canProfessional = !isProvider || (licensed !== '' && hasCert !== '');
+  const canSecurity = password.length >= 8 && password === confirmPassword && agreedTerms && agreedAccurate && agreedVerify;
 
   const goStep = (s: number) => {
     setStep(s);
@@ -193,13 +196,49 @@ export default function Signup() {
   const next = () => {
     if (step === 0 && !can0) { toast.error('Fill in your name and email'); return; }
     if (step === 1 && !can1) { toast.error('Enter your phone number'); return; }
-    if (isProvider && step === 2 && !can2) { toast.error('Complete all professional fields'); return; }
+    if (isProvider && step === 2 && !canSpec) { toast.error('Choose at least one speciality'); return; }
+    if (isProvider && step === 3 && !canProfessional) { toast.error('Complete all professional fields'); return; }
     goStep(step + 1);
   };
 
+  useEffect(() => {
+    if (!isProvider) return;
+    (async () => {
+      try {
+        const r = await api.get('/providers/specialisation-categories', { useAuth: false });
+        const res = await api.parseResponse<any>(r);
+        const list = res?.data?.categories ?? res?.data ?? [];
+        const safeCategories = Array.isArray(list) ? list : [];
+        setCategories(safeCategories);
+
+        // Preload specialisations for ALL categories so when a user taps a category,
+        // the checkboxes are already available (no extra wait).
+        const preloadResults: Record<
+          number,
+          { id: number; category_id: number; category_name: string; item_name: string }[]
+        > = {};
+
+        await Promise.all(
+          safeCategories.map(async (c: any) => {
+            if (!c?.id) return;
+            const sr = await api.get(`/providers/specialisations?category_id=${c.id}`, { useAuth: false });
+            const sres = await api.parseResponse<any>(sr);
+            const sList = sres?.data?.specialisations ?? sres?.data ?? [];
+            preloadResults[c.id] = Array.isArray(sList) ? sList : [];
+          })
+        );
+
+        setSpecialisationsByCategoryId(preloadResults);
+      } catch (e) {
+        // Non-blocking; user can still select categories and we will fall back to empty states.
+        console.warn('Failed to load specialisation categories/specialisations', e);
+      }
+    })();
+  }, [isProvider]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!can3) {
+    if (!canSecurity) {
       if (password.length < 8) toast.error('Password must be at least 8 characters');
       else if (password !== confirmPassword) toast.error('Passwords do not match');
       else toast.error('Please accept all statements to continue');
@@ -217,6 +256,7 @@ export default function Signup() {
         iso_code: country.iso,
         licensed: isProvider ? licensed === 'yes' : undefined,
         has_certificate: isProvider ? hasCert === 'yes' : undefined,
+        specialisation_ids: isProvider ? selectedSpecialisationIds : undefined,
       });
       toast.success('Account created! Check your email or phone for the verification code.');
       navigate('/verify', { state: { phone: `${country.dial}${phone}` } });
@@ -346,6 +386,21 @@ export default function Signup() {
           {step === 1 && (
             <div key={`form-${formKey}`} className="form-step-in space-y-3.5">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Country of practice</label>
+                <select
+                  value={country.iso}
+                  onChange={(e) => setCountry(COUNTRIES.find((c) => c.iso === e.target.value) ?? COUNTRIES[0])}
+                  className={`${inp} cursor-pointer`}
+                  autoFocus
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.iso} value={c.iso}>
+                      {c.flag}  {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone number</label>
                 <div className="flex gap-2">
                   <select
@@ -358,16 +413,8 @@ export default function Signup() {
                       <option key={c.iso} value={c.iso}>{c.flag} {c.dial}</option>
                     ))}
                   </select>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="700 000 000" className={inp} autoFocus />
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="700 000 000" className={inp} />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Country of practice</label>
-                <select value={country.iso} onChange={(e) => setCountry(COUNTRIES.find((c) => c.iso === e.target.value) ?? COUNTRIES[0])} className={`${inp} cursor-pointer`}>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.iso} value={c.iso}>{c.flag}  {c.name}</option>
-                  ))}
-                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -384,16 +431,154 @@ export default function Signup() {
             </div>
           )}
 
-          {/* ── Step 2: Professional (provider only) ── */}
+          {/* ── Step 2: Specialisation (provider only) ── */}
           {isProvider && step === 2 && (
             <div key={`form-${formKey}`} className="form-step-in space-y-3.5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Medical specialty</label>
-                <select value={specialty} onChange={(e) => setSpecialty(e.target.value)} className={`${inp} cursor-pointer`}>
-                  <option value="">Select your specialty...</option>
-                  {SPECIALTIES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category + specialisations
+                </label>
+
+                <div className="space-y-3">
+                  <div>
+                    <input
+                      type="text"
+                      value={specialisationSearch}
+                      onChange={(e) => setSpecialisationSearch(e.target.value)}
+                      placeholder="Search category or speciality"
+                      className={inp}
+                      autoFocus={false}
+                    />
+                  </div>
+
+                  {(() => {
+                    const q = specialisationSearch.trim().toLowerCase();
+                    const cats = q
+                      ? categories.filter((c) => {
+                          const specs = specialisationsByCategoryId[c.id] ?? [];
+                          const catMatch = c.category_name.toLowerCase().includes(q);
+                          const specMatch = specs.some((s) => s.item_name.toLowerCase().includes(q));
+                          return catMatch || specMatch;
+                        })
+                      : categories;
+
+                    return (
+                      <div className="space-y-3">
+                        {cats.map((c) => {
+                          const specs = specialisationsByCategoryId[c.id] ?? [];
+                          const filteredSpecs = q
+                            ? specs.filter((s) => s.item_name.toLowerCase().includes(q))
+                            : specs;
+                          const categoryChecked = selectedCategoryIds.includes(c.id);
+
+                          return (
+                            <div
+                              key={c.id}
+                              className={`rounded-xl border-2 transition ${
+                                categoryChecked ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'
+                              }`}
+                            >
+                              <div className="w-full px-3 py-2.5 flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={categoryChecked}
+                                  onChange={() => {
+                                    setSelectedCategoryIds((prev) =>
+                                      prev.includes(c.id) ? prev.filter((id) => id !== c.id) : [...prev, c.id]
+                                    );
+                                  }}
+                                  className="h-4 w-4 accent-primary"
+                                />
+                                <span className="text-sm font-semibold text-gray-800">{c.category_name}</span>
+                              </div>
+
+                              <div className="px-3 pb-3">
+                                {specs.length === 0 ? (
+                                  <div className="text-sm text-gray-500 mt-1">Loading specialities…</div>
+                                ) : filteredSpecs.length === 0 ? (
+                                  <div className="text-sm text-gray-500 mt-1">No matching specialities</div>
+                                ) : (
+                                  <>
+                                   <p className="mt-2 text-xs text-gray-500">
+                                      Choose one or more specialities (multi-select).
+                                    </p>
+                                    <div className="mt-2 grid grid-cols-2 gap-2">
+                                      {filteredSpecs.map((s) => {
+                                        const selected = selectedSpecialisationIds.includes(s.id);
+                                        return (
+                                          <button
+                                            key={s.id}
+                                            type="button"
+                                            onClick={() => {
+                                              setSelectedSpecialisationIds((prev) => {
+                                                const isSelected = prev.includes(s.id);
+                                                const next = isSelected
+                                                  ? prev.filter((id) => id !== s.id)
+                                                  : Array.from(new Set([...prev, s.id]));
+
+                                                // Keep category checkbox in sync with selected specialisations.
+                                                setSelectedCategoryIds((catPrev) => {
+                                                  const anySelectedInCategory = (specs ?? []).some((sp) =>
+                                                    next.includes(sp.id)
+                                                  );
+
+                                                  if (!anySelectedInCategory) {
+                                                    return catPrev.filter((id) => id !== c.id);
+                                                  }
+
+                                                  // Category should be checked if at least one specialisation is selected.
+                                                  return catPrev.includes(c.id) ? catPrev : [...catPrev, c.id];
+                                                });
+
+                                                return next;
+                                              });
+                                            }}
+                                            className={`px-3 py-2 rounded-xl border-2 text-sm font-semibold transition text-left ${
+                                              selected
+                                                ? 'border-primary bg-primary-light text-primary'
+                                                : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                            }`}
+                                          >
+                                            <span className="inline-flex items-center gap-2">
+                                              <span
+                                                className={`h-4 w-4 rounded border-2 flex items-center justify-center ${
+                                                  selected ? 'border-primary bg-primary text-white' : 'border-gray-300 bg-white'
+                                                }`}
+                                              >
+                                                {selected ? '✓' : ''}
+                                              </span>
+                                              <span>{s.item_name}</span>
+                                            </span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                   
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
+              <div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => goStep(1)} className="w-24 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition shrink-0">Back</button>
+                  <button onClick={next} disabled={!canSpec} className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 rounded-xl transition disabled:opacity-40 flex items-center justify-center gap-1.5 text-sm">
+                    Continue <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3: Professional background (provider only) ── */}
+          {isProvider && step === 3 && (
+            <div key={`form-${formKey}`} className="form-step-in space-y-3.5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Years of experience</label>
                 <div className="grid grid-cols-5 gap-1.5">
@@ -420,8 +605,8 @@ export default function Signup() {
                 </div>
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={() => goStep(1)} className="w-24 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition shrink-0">Back</button>
-                <button onClick={next} disabled={!can2} className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 rounded-xl transition disabled:opacity-40 flex items-center justify-center gap-1.5 text-sm">
+                <button onClick={() => goStep(2)} className="w-24 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition shrink-0">Back</button>
+                <button onClick={next} disabled={!canProfessional} className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 rounded-xl transition disabled:opacity-40 flex items-center justify-center gap-1.5 text-sm">
                   Continue <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -429,7 +614,7 @@ export default function Signup() {
           )}
 
           {/* ── Security + Terms (provider: step 3, client: step 2) ── */}
-          {((isProvider && step === 3) || (!isProvider && step === 2)) && (
+          {((isProvider && step === 4) || (!isProvider && step === 2)) && (
             <form key={`form-${formKey}`} onSubmit={handleSubmit} className="form-step-in space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -491,8 +676,14 @@ export default function Signup() {
               </div>
 
               <div className="flex gap-2">
-                <button type="button" onClick={() => goStep(2)} className="w-24 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition shrink-0">Back</button>
-                <button type="submit" disabled={loading || !can3} className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-xl transition disabled:opacity-40 text-sm">
+                <button
+                  type="button"
+                  onClick={() => goStep(isProvider ? 3 : 1)}
+                  className="w-24 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition shrink-0"
+                >
+                  Back
+                </button>
+                <button type="submit" disabled={loading || !canSecurity} className="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-xl transition disabled:opacity-40 text-sm">
                   {loading
                     ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                     : 'Create my account'}

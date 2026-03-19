@@ -15,6 +15,7 @@ interface ProviderProfile {
   profile_pic?: string;
   bio?: string;
   specialization?: string;
+  specialisations?: { id: number; item_name: string; category_name: string }[];
   clinic_name?: string;
   consultation_fee?: number;
   is_available?: boolean;
@@ -47,7 +48,10 @@ export default function Profile() {
 
   // Edit form state
   const [bio, setBio] = useState('');
-  const [specialization, setSpecialization] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | ''>('');
+  const [categories, setCategories] = useState<{ id: number; category_name: string }[]>([]);
+  const [specialisations, setSpecialisations] = useState<{ id: number; category_id: number; category_name: string; item_name: string }[]>([]);
+  const [selectedSpecialisationIds, setSelectedSpecialisationIds] = useState<number[]>([]);
   const [clinicName, setClinicName] = useState('');
   const [fee, setFee] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
@@ -55,23 +59,49 @@ export default function Profile() {
 
   useEffect(() => {
     api.get('/providers/profile')
-      .then((r) => api.parseResponse<{ data?: { provider?: ProviderProfile } }>(r))
+      .then((r) => api.parseResponse<{ data?: { provider?: ProviderProfile; specialisations?: any[] } }>(r))
       .then((res) => {
         const p = res.data?.provider;
+        const specs = Array.isArray(res.data?.specialisations) ? (res.data?.specialisations as any[]) : [];
         if (p) {
-          setProvider(p);
+          setProvider({ ...p, specialisations: specs as any });
           setIsAvailable(!!p.is_available);
           setBio(p.bio || '');
-          setSpecialization(p.specialization || '');
           setClinicName(p.clinic_name || '');
           setFee(p.consultation_fee !== undefined ? String(p.consultation_fee) : '');
           setLicenseNumber(p.license_number || '');
           setYearsExp(p.years_of_experience !== undefined ? String(p.years_of_experience) : '');
+          const currentIds = specs.map((s) => Number(s.id)).filter((n) => Number.isFinite(n));
+          setSelectedSpecialisationIds(currentIds);
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    api.get('/providers/specialisation-categories')
+      .then((r) => api.parseResponse<{ data?: any }>(r))
+      .then((res) => {
+        const list = (res as any)?.data?.categories ?? (res as any)?.data ?? [];
+        setCategories(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!selectedCategoryId) {
+      setSpecialisations([]);
+      return;
+    }
+    api.get(`/providers/specialisations?category_id=${selectedCategoryId}`)
+      .then((r) => api.parseResponse<{ data?: any }>(r))
+      .then((res) => {
+        const list = (res as any)?.data?.specialisations ?? (res as any)?.data ?? [];
+        setSpecialisations(Array.isArray(list) ? list : []);
+      })
+      .catch(() => setSpecialisations([]));
+  }, [selectedCategoryId]);
 
   const toggleAvailability = async () => {
     const next = !isAvailable;
@@ -90,13 +120,16 @@ export default function Profile() {
     try {
       await api.put('/providers/profile', {
         bio,
-        specialization,
+        specialisation_ids: selectedSpecialisationIds,
         clinic_name: clinicName,
         consultation_fee: fee ? Number(fee) : undefined,
         license_number: licenseNumber,
         years_of_experience: yearsExp ? Number(yearsExp) : undefined,
       });
-      setProvider((p) => p ? { ...p, bio, specialization, clinic_name: clinicName, consultation_fee: fee ? Number(fee) : p.consultation_fee, license_number: licenseNumber, years_of_experience: yearsExp ? Number(yearsExp) : p.years_of_experience } : p);
+      const refreshed = await api.parseResponse<any>(await api.get('/providers/profile'));
+      const p = refreshed?.data?.provider;
+      const specs = Array.isArray(refreshed?.data?.specialisations) ? refreshed.data.specialisations : [];
+      if (p) setProvider({ ...p, specialisations: specs });
       toast.success('Profile updated');
       setEditing(false);
     } catch (err: any) {
@@ -134,6 +167,11 @@ export default function Profile() {
   const reviews = provider?.total_reviews || 0;
   const patients = provider?.total_patients || 0;
 
+  const currentSpecialisations = provider?.specialisations || [];
+  const currentSpecialisationLabel = currentSpecialisations.length > 0
+    ? currentSpecialisations.map((s) => s.item_name).slice(0, 2).join(', ') + (currentSpecialisations.length > 2 ? ` +${currentSpecialisations.length - 2}` : '')
+    : (provider?.specialization || '');
+
   const inp = 'w-full px-4 py-2.5 text-sm border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none transition bg-white';
 
   return (
@@ -167,7 +205,7 @@ export default function Profile() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h1 className="text-xl font-bold text-gray-900">{name}</h1>
-                {provider?.specialization && <p className="text-sm text-primary font-medium mt-0.5">{provider.specialization}</p>}
+                {currentSpecialisationLabel ? <p className="text-sm text-primary font-medium mt-0.5">{currentSpecialisationLabel}</p> : null}
                 {provider?.clinic_name && <p className="text-sm text-gray-500">{provider.clinic_name}</p>}
               </div>
               <button onClick={() => setEditing(!editing)}
@@ -229,13 +267,47 @@ export default function Profile() {
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialization</label>
-                <input type="text" value={specialization} onChange={(e) => setSpecialization(e.target.value)} placeholder="e.g. General Practitioner" className={inp} />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialisation category</label>
+                <select
+                  value={selectedCategoryId}
+                  onChange={(e) => {
+                    const v = e.target.value ? Number(e.target.value) : '';
+                    setSelectedCategoryId(v);
+                    setSelectedSpecialisationIds([]);
+                  }}
+                  className={inp}
+                >
+                  <option value="">Select category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.category_name}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Pick a category first, then choose one or more specialisations.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Clinic / Practice Name</label>
-                <input type="text" value={clinicName} onChange={(e) => setClinicName(e.target.value)} placeholder="e.g. City Health Clinic" className={inp} />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialisations</label>
+                <select
+                  multiple
+                  value={selectedSpecialisationIds.map(String)}
+                  onChange={(e) => {
+                    const opts = Array.from(e.target.selectedOptions)
+                      .map((o) => Number(o.value))
+                      .filter((n) => Number.isFinite(n));
+                    setSelectedSpecialisationIds(opts);
+                  }}
+                  className={`${inp} h-[120px]`}
+                  disabled={!selectedCategoryId}
+                >
+                  {specialisations.map((s) => (
+                    <option key={s.id} value={s.id}>{s.item_name}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Clinic / Practice Name</label>
+              <input type="text" value={clinicName} onChange={(e) => setClinicName(e.target.value)} placeholder="e.g. City Health Clinic" className={inp} />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>

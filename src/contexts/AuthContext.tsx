@@ -31,6 +31,7 @@ interface AuthContextType {
     iso_code?: string;
     licensed?: boolean;
     has_certificate?: boolean;
+    specialisation_ids?: number[];
   }) => Promise<{ userId?: string }>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
@@ -95,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     iso_code?: string;
     licensed?: boolean;
     has_certificate?: boolean;
+    specialisation_ids?: number[];
   }) => {
     const body: Record<string, unknown> = {
       email: data.email,
@@ -107,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     if (data.licensed !== undefined) body.licensed = data.licensed;
     if (data.has_certificate !== undefined) body.has_certificate = data.has_certificate;
+    if (Array.isArray(data.specialisation_ids)) body.specialisation_ids = data.specialisation_ids;
     const res = await api.post('/auth/signup', body, { useAuth: false });
     const result = await api.parseResponse<{ data?: { user_id?: string; jwt?: string; role?: string } }>(res);
     const token = result.data?.jwt;
