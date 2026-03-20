@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 
 const APP_STORE_URL = 'https://apps.apple.com/app/canoe-health/id000000000';
@@ -6,14 +5,17 @@ const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.canoeh
 
 export default function SignupSuccessPatient() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-6">
-      <div className="w-full max-w-md text-center">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-6">
+      <div className="w-full max-w-md text-center mx-auto">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-16 h-16 text-primary" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Successfully signed up!</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Thank you for signing up with Canoe Health. Your account is confirmed!!</h1>
         <p className="text-gray-600 mt-3">
-          Please download the Canoe Health app to book appointments, chat with providers, and join video calls.
+          Our mission is to connect patients to trusted care anytime, anywhere.
+        </p>
+        <p className="text-gray-600 mt-3">
+          To use our services, please download the Canoe Health App on the Google Play Store or Apple Store and use the same log in credentials.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
@@ -42,10 +44,11 @@ export default function SignupSuccessPatient() {
         </div>
 
         <p className="text-sm text-gray-500 mt-8">
-          <Link to="/login" className="text-primary font-semibold hover:underline">
-            Sign in to the web app
-          </Link>
-          {' '}if you're a provider
+          Contact{' '}
+          <a href="mailto:support@canoehealthcare.com" className="text-primary font-semibold hover:underline">
+            support@canoehealthcare.com
+          </a>
+          {' '}if you have any questions.
         </p>
       </div>
     </div>

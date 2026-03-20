@@ -200,7 +200,7 @@ export default function Signup() {
   const can0 = firstName.trim() && lastName.trim() && email.trim().includes('@') && phone.trim().length >= 6;
   const canSpec = !isProvider || selectedSpecialisationIds.length > 0;
   const canProfessional = !isProvider || (licensed !== '' && hasCert !== '');
-  const canSecurity = password.length >= 8 && password === confirmPassword && agreedTerms && agreedAccurate && agreedVerify;
+  const canSecurity = password.length >= 8 && password === confirmPassword && agreedTerms && (isProvider ? (agreedAccurate && agreedVerify) : true);
 
   const goStep = (s: number) => {
     setStep(s);
@@ -910,18 +910,20 @@ export default function Signup() {
                       </>
                     ),
                   },
-                  {
-                    id: 'accurate',
-                    checked: agreedAccurate,
-                    set: setAgreedAccurate,
-                    label: 'I confirm that all information I have provided is accurate and complete',
-                  },
-                  {
-                    id: 'verify',
-                    checked: agreedVerify,
-                    set: setAgreedVerify,
-                    label: 'I understand my account is subject to verification before I can start accepting patients',
-                  },
+                  ...(isProvider ? [
+                    {
+                      id: 'accurate',
+                      checked: agreedAccurate,
+                      set: setAgreedAccurate,
+                      label: 'I confirm that all information I have provided is accurate and complete',
+                    },
+                    {
+                      id: 'verify',
+                      checked: agreedVerify,
+                      set: setAgreedVerify,
+                      label: 'I understand my account is subject to verification before I can start accepting patients',
+                    },
+                  ] : []),
                 ].map((item) => (
                   <label key={item.id} className="flex items-start gap-3 cursor-pointer">
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${item.checked ? 'border-primary bg-primary' : 'border-gray-300 bg-white'}`}
